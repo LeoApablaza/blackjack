@@ -7,17 +7,33 @@
     const tipos = ['C', 'D', 'H', 'S'],
           especiales = ['A', 'J', 'Q', 'K'];
 
-    let puntosJugador = 0,
-        puntosComputadora = 0;
+    let puntosJugadores = [];
 
     const btnPedirCarta = document.querySelector('#btnPedirCarta'),
           btnDetener = document.querySelector('#btnDetener'),
           btnNuevoJuego = document.querySelector('#btnNuevoJuego'),
-          puntosJugadorHTML = document.querySelector('#puntosJugador'),
-          puntosComputadoraHTML = document.querySelector('#puntosComputadora'),
-          divCartasJugador = document.querySelector('#jugador-cartas'),
-          divCartasComputadora = document.querySelector('#computadora-cartas');
+          puntosHTML = document.querySelectorAll('.puntosJugadores'),
+          divCartasJugadores = document.querySelectorAll('.divCartas');
 
+
+    const iniciarJuego = (numJugadores = 2) => {
+
+        deck = crearDeck();
+        puntosJugadores = [];
+
+        for( let i = 0; i < numJugadores; i++ ) {
+
+            puntosJugadores.push(0);
+
+            puntosHTML[i].innerText = 0;
+            divCartasJugadores[i].innerHTML = '';
+            
+        }
+        
+        btnDetener.disabled = false;
+        btnPedirCarta.disabled = false;
+
+    }
 
     // Función para crear nueva baraja
     const crearDeck = () => {
@@ -65,15 +81,9 @@
 
         const carta = pedirCarta();
 
-        puntosJugador += getValorCarta(carta);
+        const puntosJugador = acumularPuntos(0, carta);
 
-        puntosJugadorHTML.innerText = puntosJugador;
-
-        const imgCarta = document.createElement('img');
-        imgCarta.src = `assets/cartas/${carta}.png`;
-        imgCarta.classList.add('carta');
-
-        divCartasJugador.appendChild(imgCarta);
+        crearCarta(0, carta);
 
         if (puntosJugador >= 21) {
 
@@ -84,21 +94,29 @@
 
     })
 
-    const turnoComputadora = (puntosMinimos) => {
+    const acumularPuntos = (turno, carta) => {
 
-        do {
-            const carta = pedirCarta();
+        puntosJugadores[turno] += getValorCarta(carta);
 
-            puntosComputadora += getValorCarta(carta);
+        puntosHTML[turno].innerText = puntosJugadores[turno];
 
-            puntosComputadoraHTML.innerText = puntosComputadora;
+        return puntosJugadores[turno];
 
-            const imgCarta = document.createElement('img');
-            imgCarta.src = `assets/cartas/${carta}.png`;
-            imgCarta.classList.add('carta');
-            divCartasComputadora.appendChild(imgCarta);
+    }
 
-        } while ((puntosComputadora < puntosMinimos) && puntosMinimos <= 21);
+    const crearCarta = (turno, carta) => {
+
+        const imgCarta = document.createElement('img');
+        imgCarta.src = `assets/cartas/${carta}.png`;
+        imgCarta.classList.add('carta');
+
+        divCartasJugadores[turno].appendChild(imgCarta);
+
+    }
+
+    const getGanador = () => {
+
+        const [puntosMinimos, puntosComputadora] = puntosJugadores;
 
         setTimeout(() => {
 
@@ -111,12 +129,29 @@
             if (puntosComputadora > 21)
                 return alert('Ganaste!');
 
-            if(puntosMinimos > puntosComputadora)
+            if (puntosMinimos > puntosComputadora)
                 return alert('Ganaste!');
             else
                 return alert('La computadora gana, vuelve a intentarlo!');
 
         }, 100);
+    
+    }
+
+    const turnoComputadora = (puntosMinimos) => {
+
+        let puntosComputadora = 0;
+
+        do {
+            const carta = pedirCarta();
+
+            puntosComputadora = acumularPuntos(puntosJugadores.length - 1, carta);
+
+            crearCarta(puntosJugadores.length - 1, carta);
+
+        } while ((puntosComputadora < puntosMinimos) && puntosMinimos <= 21);
+
+        getGanador();
 
     }
 
@@ -125,22 +160,15 @@
         btnPedirCarta.disabled = true;
         btnDetener.disabled = true;
 
-        turnoComputadora(puntosJugador);
+        turnoComputadora(puntosJugadores[0]);
 
     })
 
     btnNuevoJuego.addEventListener('click', () => {
 
-        window.location.reload();
+        iniciarJuego();
 
     })
-
-    const iniciarJuego = () => {
-
-        deck = crearDeck();
-    }
-
-    iniciarJuego();
 
 })();
 
